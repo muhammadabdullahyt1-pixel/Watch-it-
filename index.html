@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Video Player</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .player-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #000;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-container iframe, 
+        .player-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .placeholder-text, .error-text {
+            color: white;
+            position: absolute;
+            text-align: center;
+        }
+
+        .error-text {
+            color: #ff4d4d;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Video Player</h1>
+        <p>Paste a YouTube, Vimeo, or direct .mp4 link below to watch it instantly.</p>
+        
+        <div class="input-group">
+            <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+            <button onclick="playVideo()">Play Video</button>
+        </div>
+
+        <div id="playerContainer" class="player-container">
+            <p class="placeholder-text">Video will appear here</p>
+        </div>
+    </div>
+
+    <script>
+        function playVideo() {
+            const urlInput = document.getElementById('videoUrl').value.trim();
+            const container = document.getElementById('playerContainer');
+            
+            // Clear the container
+            container.innerHTML = '';
+
+            if (!urlInput) {
+                container.innerHTML = '<p class="error-text">Please enter a valid URL.</p>';
+                return;
+            }
+
+            // 1. Check for YouTube links (matches both youtube.com and youtu.be)
+            const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+            const ytMatch = urlInput.match(ytRegex);
+
+            // 2. Check for Vimeo links
+            const vimeoRegex = /vimeo\.com\/(?:.*#|.*\/videos\/)?([0-9]+)/i;
+            const vimeoMatch = urlInput.match(vimeoRegex);
+
+            // 3. Check for Direct Video Files (.mp4, .webm)
+            const directVideoRegex = /\.(mp4|webm|ogg)$/i;
+
+            if (ytMatch) {
+                // It's a YouTube video
+                const videoId = ytMatch[1];
+                container.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                
+            } else if (vimeoMatch) {
+                // It's a Vimeo video
+                const videoId = vimeoMatch[1];
+                container.innerHTML = `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=1" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+                
+            } else if (urlInput.match(directVideoRegex)) {
+                // It's a direct video link
+                container.innerHTML = `<video controls autoplay><source src="${urlInput}" type="video/mp4">Your browser does not support the video tag.</video>`;
+                
+            } else {
+                // Platform not supported or invalid link
+                container.innerHTML = `<p class="error-text">Sorry! We currently only support YouTube, Vimeo, or direct .mp4 links. <br><br>The link provided cannot be embedded.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
